@@ -12,6 +12,15 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
+      # 🔍 Debug step to confirm secrets are passed
+      - name: Debug AWS Secrets
+        run: |
+          echo "AWS_ACCESS_KEY_ID length: ${#AWS_ACCESS_KEY_ID}"
+          echo "AWS_SECRET_ACCESS_KEY length: ${#AWS_SECRET_ACCESS_KEY}"
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v1
         with:
@@ -40,14 +49,11 @@ jobs:
 
       - name: Install Nginx
         run: |
-          # Install Nginx if not installed
           if ! command -v nginx &> /dev/null; then
               echo "Installing Nginx..."
               sudo apt-get update
               sudo apt-get install -y nginx
           fi
-
-          # Create directories if they don't exist
           sudo mkdir -p /etc/nginx/sites-available
           sudo mkdir -p /etc/nginx/sites-enabled
 
@@ -57,20 +63,16 @@ jobs:
           ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Stop any existing container
           docker stop streamlit-container 2>/dev/null || true
           docker rm streamlit-container 2>/dev/null || true
 
-          # Run the container
           docker run -d --name streamlit-container -p 8501:8501 --restart unless-stopped $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-          # Configure Nginx
           echo "Creating Nginx configuration..."
           cat > /tmp/streamlit_nginx << 'EOL'
           server {
               listen 80;
               server_name _;
-
               location / {
                   proxy_pass http://localhost:8501;
                   proxy_http_version 1.1;
