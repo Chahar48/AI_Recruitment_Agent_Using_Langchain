@@ -28,7 +28,7 @@ AmazonECR-FullAccess
 AmazonEC2ContainerRegistryFullAccess
 
 
-2️⃣ Create an ECR Repository
+2️⃣ Create an ECR Repository 
 
 Navigate to AWS ECR Console
 Click Create Repository
