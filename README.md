@@ -72,7 +72,7 @@ Add the following secrets:
 
 
 ⚙️ GitHub Actions Runner Setup
-Install Runner as a Service
+#Install Runner as a Service
 sudo ./svc.sh install
 sudo ./svc.sh start
 sudo ./svc.sh status
