@@ -1,102 +1,100 @@
-# AI_Recruitment_Agent_Using_Lanhgchain
+🚀 AI Recruitment Agent (LangChain + Streamlit + AWS + GitHub Actions)
 
-python create venv venv
+This project is an AI Recruitment Agent built with LangChain and Streamlit, deployed using AWS (ECR + EC2) and automated with GitHub Actions.
 
-# 1. activate env
-venv/scripts/activate
+Follow the steps below to set up the development environment, deploy to AWS, and manage CI/CD.
 
-# 2. pip install -r requirements.txt
+🛠️ Local Development Setup
+
+#1 Create & Activate Virtual Environment
+python -m venv venv
+source venv/bin/activate   # Mac/Linux
+venv\Scripts\activate      # Windows
+
+#2 Install Dependencies
 pip install -r requirements.txt
 
-# 3. run your project
+#3 Run the App
 streamlit run app.py
 
 
-# 1. Create an IAM User for Github Actions
+☁️ AWS Deployment Guide
+1️⃣ Create an IAM User for GitHub Actions
 
-Go to AWS IAM console
-Create a new IAM user with programmatic access
-Attach policies:
-
+Go to AWS IAM Console
+Create a new IAM User with Programmatic Access
+Attach the following policies:
 AmazonECR-FullAccess
-
 AmazonEC2ContainerRegistryFullAccess
 
-# 2 Create an ECR Repository
 
-Go to AWS ECR console
-Click "Create repository"
-Enter a name for your repository (e.g., "streamlit-app")
-Keep default settings and click "Create repository"
-Note the repository URI
+2️⃣ Create an ECR Repository
 
-# 3 Launch an EC2 Instance
-
-Go to EC2 console
-Launch a new EC2 instance:
-
-Choose Ubuntu Server 20.04 LTS
-Select t2.micro (free tier) or appropriate size
-Configure security groups:
-
-Allow SSH (port 22)
-Allow HTTP (port 80)
-Allow HTTPS (port 443)
-Allow Custom TCP (port 8501)
-
-Launch with a new key pair (save the .pem file)
-
-# 4 : Attach this role to your EC2 instance:
-
-Go to EC2 console
-Select your instance
-Actions → Security → Modify IAM role
-Select the role you created and click "Save"
- 
-# 5: Set Up GitHub Secrets
-
-In your GitHub repository:
-
-Go to Settings → Secrets → New repository secret
-Add these secrets:
-
-# Credentials need to add
-
-AWS_ACCESS_KEY_ID: Your IAM user access key
-AWS_SECRET_ACCESS_KEY: Your IAM user secret key
-AWS_REGION: Your AWS region (e.g., us-east-1)
-ECR_REPOSITORY: Your ECR repository name
-EC2_HOST: Your EC2 instance public IP or DNS
-EC2_SSH_KEY: The private SSH key content (.pem file)
-
-627327986499.dkr.ecr.ap-south-1.amazonaws.com/ai_recruitment_repo  ##----
-
-cat /path/to/your-key.pem
-
-/Users/myhome/Downloads/streamlit-app.pem
+Navigate to AWS ECR Console
+Click Create Repository
+Enter a name (e.g., streamlit-app)
+Keep default settings and click Create
+Copy the Repository URI
+Example: 627327986499.dkr.ecr.ap-south-1.amazonaws.com/ai_recruitment_repo
 
 
-#Run The App:
-Install the runner as a service:
+3️⃣ Launch an EC2 Instance
+
+Go to AWS EC2 Console
+Launch a new instance:
+AMI: Ubuntu Server 20.04 LTS
+Instance Type: t2.micro (free tier) or larger
+Security Groups:
+SSH (22)
+HTTP (80)
+HTTPS (443)
+Custom TCP (8501)
+Create and download a new key pair (.pem file)
+
+4️⃣ Attach IAM Role to EC2
+
+Go to EC2 Console
+Select your instance → Actions → Security → Modify IAM Role
+Attach the IAM Role created earlier
+
+5️⃣ Configure GitHub Secrets
+
+In your GitHub Repository → Settings → Secrets → Actions
+Add the following secrets:
+| Secret Name             | Value (Example)                                       |
+| ----------------------- | ----------------------------------------------------- |
+| `AWS_ACCESS_KEY_ID`     | Your IAM Access Key                                   |
+| `AWS_SECRET_ACCESS_KEY` | Your IAM Secret Key                                   |
+| `AWS_REGION`            | e.g., `ap-south-1`                                    |
+| `ECR_REPOSITORY`        | `ai_recruitment_repo`                                 |
+| `EC2_HOST`              | Your EC2 Public IP / DNS                              |
+| `EC2_SSH_KEY`           | Paste the content of `.pem` file (`cat your-key.pem`) |
+
+
+⚙️ GitHub Actions Runner Setup
+Install Runner as a Service
 sudo ./svc.sh install
-
-Start the runner service:
 sudo ./svc.sh start
-
-Verify the service is running:
 sudo ./svc.sh status
 
-# Stop and Remove runner steps
+
+#Stop & Remove Runner
 sudo docker stop streamlit-container
 sudo docker rm streamlit-container
 
 sudo ./svc.sh stop
 sudo ./svc.sh uninstall
+./config.sh remove --token <OLD_TOKEN>
 
-./config.sh remove --token ABCDEFGHIJKLMNOPQRSTUV
 
-# New runner
-./config.sh --url https://github.com/your-username/your-new-repo --token YOUR_NEW_TOKEN
+#Add a New Runner
+./config.sh --url https://github.com/<your-username>/<your-repo> --token <NEW_TOKEN>
 sudo ./svc.sh install
 sudo ./svc.sh start
 
+✅ Run & Manage the App
+
+Once the CI/CD pipeline is set up:
+Push changes → GitHub Actions will build & push Docker image → Deploy to EC2
+Access your Streamlit app via:
+http://<EC2-PUBLIC-IP>:8501
